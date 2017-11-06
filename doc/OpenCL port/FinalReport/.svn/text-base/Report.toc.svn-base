@@ -1,0 +1,12 @@
+\contentsline {section}{\numberline {1}Introduction}{2}
+\contentsline {section}{\numberline {2}Icosahedral Non-Hydrostatic Model}{2}
+\contentsline {subsection}{\numberline {2.1}Problem Statement}{2}
+\contentsline {subsection}{\numberline {2.2}Main Characteristics of the ICON Model}{3}
+\contentsline {section}{\numberline {3}Performance Assessment}{5}
+\contentsline {subsection}{\numberline {3.1}Roofline Model}{5}
+\contentsline {subsection}{\numberline {3.2}Hardware Configurations}{6}
+\contentsline {section}{\numberline {4}Results}{7}
+\contentsline {subsection}{\numberline {4.1}Role of the GPU}{8}
+\contentsline {subsection}{\numberline {4.2}GPUs vs CPUs}{10}
+\contentsline {subsection}{\numberline {4.3}OpenCL Kernels}{12}
+\contentsline {section}{\numberline {5}Future}{14}

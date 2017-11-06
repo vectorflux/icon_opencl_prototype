@@ -1,0 +1,91 @@
+#!/bin/ksh
+#==============================================================================
+# creates the run scripts
+# for details see the parameters in ./config/make_target_runscript
+# Leonidas Linardakis, MPI-M
+#==============================================================================
+submit_runs=no
+if [[ x$1 == xrun ]] ; then
+  submit_runs=yes
+fi
+
+
+#==============================================================================
+base_folder=$(pwd)
+input_folder=run
+#==============================================================================
+# read the current setup
+. $base_folder/config/set-up.info
+# choose shell
+if [[ x$use_shell == x ]] ; then
+  use_shell="/bin/ksh"
+fi
+
+#==============================================================================
+#define set of threads to run and nproma (the load for each thread)
+if [[ x$use_openmp == xyes ]] ; then
+  case "$use_target" in
+    mpipc|mpimac)
+      threads_set="2"
+      nproma_set='"16"'
+      ;;
+    tornado)
+      threads_set="1 4 8 16"
+      nproma_set='"36 40 44"'
+      ;;
+    squall)
+      echo "squall is not set up for openmp"
+      exit 1
+      ;;
+    blizzard)
+      threads_set="1 4 8 16 32 64 128"
+      nproma_set='"32 36 40 44 48 52 56 60"'
+      ;;
+    *)
+      threads_set="2 4 6"
+      nproma_set='"16"'
+      ;;
+  esac 
+else
+  threads_set="1"
+  nproma_set='"16"'
+fi
+#==============================================================================
+
+#==============================================================================
+# The $make_runscript command directs to the ./config/make_target_runscript
+make_runscript="$use_shell ./config/make_target_runscript"
+cd $input_folder
+in_file_list=`ls exp.*`
+cd $base_folder
+#==============================================================================
+
+
+echo "-----------------------------------------------------------"
+out_list=""
+for filename in $in_file_list
+do
+  if [[ $filename != *.run && $filename != *~ ]] ; then
+    for threads in $threads_set
+    do
+     outfile=${filename}.t$threads.run
+     outlist="${outlist} ${outfile}"
+     $make_runscript in_folder=$input_folder in_script=${filename} out_script=${outfile} openmp_threads=$threads nproma_set="$nproma_set" cpu_time="00:30:00"
+    done
+  fi
+done
+echo "-----------------------------------------------------------"
+
+if [[ $submit_runs == yes ]] ; then
+  echo "run..." $outlist
+  cd $input_folder
+  for runscript in $outlist
+  do
+    if [[ x$use_submit == x ]] ; then
+       ./$runscript
+    else
+       $use_submit $runscript
+    fi
+  done
+fi
+echo "-----------------------------------------------------------"

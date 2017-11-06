@@ -1,0 +1,19 @@
+
+#############################
+# set-up.info created by configure
+# do not modify this file
+#############################
+use_site="cscs.ch"
+use_target="palu"
+use_compiler="gcc"
+use_mpi="no"
+use_openmp="no"
+use_builddir="build/x86_64-unknown-linux-gnu"
+use_mpi_root=""
+use_mpi_startrun="mpiexec -n \$mpi_procs"
+use_load_modules="netcdf hdf5 "
+use_load_profile=""
+use_netcdflibpath="/apps/eiger/netcdf/4.13/mvapich2-1.5.1p1/lib"
+use_make_command="make -j 8"
+use_submit="qsub"
+use_shell="/bin/sh"

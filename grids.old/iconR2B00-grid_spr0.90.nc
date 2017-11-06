@@ -1,0 +1,1 @@
+/project/csstaff/inputs/icon/grids/iconR2B00-grid_spr0.90.nc

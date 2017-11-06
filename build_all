@@ -1,0 +1,358 @@
+#!/usr/bin/python
+#
+# -*- coding: utf-8 -*-
+#==============================================================================
+# Creates the ICON multiple builds based on config/multiple_builds
+# Leonidas Linardakis, MPI-M, 2011-25-1
+#==============================================================================
+import sys
+import os
+import stat
+import glob
+
+#==============================================================================
+def warning(where,message):
+  print '********************'
+  print "Warning: "+where+" "+message
+  print '********************'
+  
+def error(where,message):
+  print '********************'
+  print "ERROR: "+where+" "+message
+  print "Exit 1 "
+  print '********************'
+  sys.exit(1)
+#==============================================================================
+
+
+#==============================================================================
+def processArgs():
+  global clean_build
+  global clean_all
+  global clean_run
+  global create
+  global no_build
+  global run
+  global force_create
+  
+  for opt in sys.argv[1:]:
+    if opt == "clean_build":
+      clean_build = True
+    elif opt == "clean_all":
+      clean_all = True
+    elif opt == "create":
+      create = True
+    elif opt == "force_create":
+      force_create = True
+    elif opt == "clean_run":
+      clean_run = True
+    elif opt == "no_build":
+      no_build = True
+    elif opt == "run":
+      run = True
+    else:
+      error(opt,'not recognaized')
+    
+  return
+#==============================================================================
+
+
+def readMultipleBuilds():
+
+  global build_folder
+  global configure_options
+  global no_of_builds
+  global run_scripts
+   
+  builds_file="./config/multiple_builds"
+  noOfTabSpaces=1
+  run_scripts=[]
+  runscr=[]
+
+  infile  = open(builds_file, 'r')
+  no_of_builds=0
+  for line in infile:
+    # replace tabs and remove leadin, trailing spaces
+    line = line.expandtabs(noOfTabSpaces)
+    line = line.lstrip()
+    line = line.rstrip()
+    lineLength = len(line)
+    if (lineLength < 1):
+      continue
+    if (line[0] == '#'):
+      continue
+    if (lineLength < 10):
+      error(line, " invalid line")
+      continue
+
+    # check if it's run_scripts
+    sep_idx=line.find("run_scripts")
+    if (sep_idx > -1):
+      # it's run_scripts
+      sep_idx=line.find('=')
+      if (sep_idx < 1):
+        error(line, "wrong syntax")
+      line=line[sep_idx+1:]    
+      line=line.rstrip()
+      
+      while (len(line) > 0):
+        line=line.lstrip()
+        sep_idx=line.find(',')
+        if (sep_idx < 0):
+          sep_idx=len(line)
+        new_script=line[0:sep_idx]
+        new_script=new_script.rstrip()
+        runscr.append(new_script)
+
+        line=line[sep_idx+1:]
+      continue
+              
+    # get build_folder
+    sep_idx=line.find('=')
+    if (sep_idx < 1):
+      error(line, "wrong syntax")
+      continue  
+    parameter_name=line[0:sep_idx]
+    parameter_name=parameter_name.rstrip()
+    if (parameter_name != "build_folder"):
+      error(parameter_name, " != build_folder")
+      continue    
+    line=line[sep_idx+1:]
+    line=line.lstrip()
+    sep_idx=line.find("configure_options")
+    if (sep_idx < 1):
+      error("configure_options", "parameter not found")
+      continue
+       
+    no_of_builds=no_of_builds+1
+    build_fld=line[0:sep_idx]
+    build_folder.append(build_fld.rstrip())
+
+    # get configure_options
+    line=line[sep_idx:]
+    sep_idx=line.find('=')
+    if (sep_idx < 1):
+      error(line, "wrong syntax")
+      continue  
+    configure_options.append(line[sep_idx+1:])
+  
+  # get the run scripts
+  os.chdir("run")
+  for file in runscr:
+    run_scripts.extend(glob.glob(file))
+  os.chdir("..")
+  return
+#==============================================================================
+    
+    
+def linkRunScripts(this_build_folder):
+  global run_scripts
+  
+  # link the run scripts
+  os.chdir(this_build_folder+"/run")  
+  for script in run_scripts:
+    os.symlink("../../run/"+script, "./"+script)
+  os.chdir("../..")
+  return
+
+#==============================================================================
+
+
+def cleanRun():
+  # link the run scripts
+  os.chdir("run")
+  os.system("rm *")
+  os.chdir("..")
+  return
+#==============================================================================
+
+    
+#==============================================================================
+def createOneBuild(this_build_folder, this_configure_options):
+  global force_create
+
+  create_folders=["run", "config"]
+
+  link_files_alevel=["data", "grids", "vertical_coord_tables",
+  "include", "src", "support",
+  "aclocal.m4", "configure.ac","configure", "make_runscripts", "Makefile.in"]
+  link_files_blevel=[
+  "config/config.guess",
+  "config/config.h.SX",
+  "config/config.h.in",
+  "config/config.sub",
+  "config/createMakefiles.pl",
+  "config/create_target_header",
+  "config/install-sh",
+  "config/make_target_runscript",
+  "config/mh-aix",
+  "config/mh-cygwin",
+  "config/mh-darwin",
+  "config/mh-linux",
+  "config/mh-nec",
+  "config/mh-override",
+  "config/set-up",
+  "config/missing"]
+  
+  print "==================================="
+  print "Creating "+this_build_folder
+  print "  configure options=",this_configure_options
+  print "==================================="
+
+  #---------------------------
+  # build the ...build
+  #---------------------------
+  #create subfolders
+  if (os.access(this_build_folder, os.F_OK)):
+    if (force_create ):
+      warning(this_build_folder, "exists, re-create it.")
+      os.system("rm -rf "+this_build_folder)
+    else:
+      warning(this_build_folder, "exists, skip it.")
+      return
+
+  os.mkdir(this_build_folder)
+
+  for file in create_folders:
+    os.mkdir(this_build_folder+"/"+file)
+
+  # if the grid folder does not exist, create it
+  if (not os.access("grids", os.F_OK)):
+    os.mkdir("grids")
+  # make the links
+  for file in link_files_alevel:
+    os.symlink("../"+file, this_build_folder+"/"+file)
+  for file in link_files_blevel:
+    os.symlink("../../"+file, this_build_folder+"/"+file)
+
+  # link the run scripts
+  linkRunScripts(this_build_folder)
+
+  # create the build_local
+  build_local_file=this_build_folder+"/build_local"
+  build_local  = open(build_local_file, 'w')
+  build_local.write("./configure "+this_configure_options+"\n")
+  build_local.write("./build_command\n")
+  build_local.close()
+  os.chmod(build_local_file, stat.S_IRWXU | stat.S_IRGRP)
+
+  print "Creating "+this_build_folder+" is done."
+  print "==================================="
+  return
+#==============================================================================
+
+    
+#==============================================================================
+def createAll():
+  global build_folder
+  global no_of_builds
+  global configure_options
+
+  
+  for build_idx in range(0, no_of_builds):
+    createOneBuild(build_folder[build_idx], configure_options[build_idx])
+  return
+#==============================================================================
+  
+def wait_forks(pList):
+  global thisIsChildProcess
+  
+  if (thisIsChildProcess):
+    sys.exit(0)
+  else:
+    for p in pList:
+      chkid, exit_status = os.waitpid(p,0)
+      print chkid, " returned ", exit_status
+      
+   
+#==============================================================================
+def buildOne(this_build_folder,this_configure_options):
+  
+  global clean_run, no_build, run, basefolder
+  global thisIsChildProcess
+  
+
+  pid = os.fork()
+  #print "Got pid=", pid
+  if ( pid != 0 ):
+    #print "Return pid=", pid
+    return pid
+
+  print "==================================="
+  print "building for "+this_build_folder
+  print "  configure options="+this_configure_options
+  print "==================================="
+  
+  thisIsChildProcess = True
+
+  os.chdir(basefolder)
+
+  print "checking ", this_build_folder, "..."
+  if (not os.access(this_build_folder, os.F_OK)):
+    warning(this_build_folder, "not found. Attempt to create it.")
+    createOneBuild(this_build_folder, this_configure_options)
+
+  if ( clean_run ):
+    cleanRun()
+    linkRunScripts(this_build_folder)
+
+  os.chdir(this_build_folder)
+
+  if (not no_build):
+    if ( clean_build ):
+      os.system("rm -rf build")
+    os.system("./build_local")
+
+  if ( run ):
+    os.system("./make_runscripts run")
+
+  os.chdir("..")
+
+  sys.exit(0)
+
+#==============================================================================
+  
+
+builds_file="./config/multiple_builds"
+noOfTabSpaces=1
+run_scripts=[]
+clean_build = False
+clean_all = False
+clean_run = False
+no_build = False
+run = False
+create = False
+force_create = False
+
+thisIsChildProcess = False
+
+basefolder=os.path.abspath(os.path.dirname(sys.argv[0]))
+
+processArgs()
+  
+build_folder=[]
+configure_options=[]
+
+readMultipleBuilds()
+
+
+if ( create or force_create ):
+  createAll()
+
+pList=[]
+
+for build_idx in range(0, no_of_builds):
+
+  pid = buildOne(build_folder[build_idx],configure_options[build_idx])
+  if ( pid ):
+    pList.append(pid)
+    #print "new pid=",pid
+
+wait_forks(pList)
+
+print "-------------------------------\n"
+print "Builds are completed."
+print "-------------------------------\n"
+
+sys.exit(0)
+

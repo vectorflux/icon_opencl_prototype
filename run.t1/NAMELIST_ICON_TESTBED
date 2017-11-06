@@ -1,0 +1,26 @@
+&parallel_ctl
+/
+&testbed_ctl
+  nproma_set=1    ! array blocking starts at 16, by 8, up to 64
+  main_iterations=10 ! how many times we will run the tests from the main driver
+  run_nh_solver=.true.
+/
+&io_ctl
+ out_expname = '' ! file name base
+/
+&run_ctl
+ nlev        = 35    ! number of full levels of vertical grid
+ i_cell_type = 3            ! triangular cells
+ msg_level   = 5            ! level of print detail
+ dtime       = 180          ! time step secs
+/
+&grid_ctl
+ patch_file_name = '/users/wsawyer/Software/ICON/icon_testbed_base.v0.1_1_opencl/grids/iconR2B03-grid.nc'
+ vertical_coordinates_file_name = '/users/wsawyer/Software/ICON/icon_testbed_base.v0.1_1_opencl/vertical_coord_tables/atm_hyb_sz_35'
+/
+&nh_ctl
+ nh_dtime = 180         ! nh solver time step secs
+ nh_iterations=100
+/
+&ocean_ctl
+/

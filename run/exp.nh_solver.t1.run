@@ -1,0 +1,171 @@
+#!/bin/sh
+#=============================================================================
+#=============================================================================
+#
+# ICON run script. Created by ./config/make_target_runscript
+# target machine is palu
+# target use_compiler is gcc
+# with mpi=no
+# with openmp=no
+# submit with qsub
+#
+#=============================================================================
+set -x
+#-----------------------------------------------------------------------------
+check_error()
+{
+    # Check if the first parameter (return status) is not OK
+    # Arguments:
+    #   $1 = error status: 0 = OK, not 0 = ERROR
+    #   $2 = error message
+
+    if [ "${STATUS_FILE}" == "" ]
+    then
+      STATUS_FILE=${basedir}/.status.file
+    fi
+    
+    echo "$1" > ${STATUS_FILE}
+
+    if [ $1 != 0 ] 
+    then
+        echo "check_error()"
+        echo "   ERROR : $2"
+        exit $1
+    fi
+
+}
+#-----------------------------------------------------------------------------
+# target parameters
+# ----------------------------
+site="cscs.ch"
+target="palu"
+compiler="gcc"
+loadmodule="netcdf hdf5 "
+# ----------------------------
+NPROMA=8
+#-----------------------------------------------------------------------------
+# MPI variables
+# ----------------------------
+mpi_root=
+no_of_nodes=1
+mpi_procs=1
+start=""
+START="$start"
+# ----------------------------
+# openmp environment variables
+# ----------------------------
+export OMP_NUM_THREADS=1
+export OMP_SCHEDULE="static"
+export OMP_DYNAMIC="false"
+export OMP_STACKSIZE=50M
+export ICON_THREADS=1
+#-----------------------------------------------------------------------------
+# absolute paths of directories
+calldir=$(pwd)
+# cd $(dirname $0)
+thisdir=$(pwd)
+basedir=${thisdir%/*}                   # determine base directory
+bindir="${basedir}/build/x86_64-unknown-linux-gnu/bin"   # binaries
+BUILDDIR=build/x86_64-unknown-linux-gnu
+export ICON_BASE_PATH=$basedir
+#-----------------------------------------------------------------------------
+# load ../setting if exists  
+if [ -a ../setting ]
+then
+  echo "Load Setting"
+  . ../setting
+fi
+#-----------------------------------------------------------------------------
+#=============================================================================
+# load modules
+module load "$loadmodule"
+#=============================================================================
+#=============================================================================
+export LD_LIBRARY_PATH=/apps/eiger/netcdf/4.13/mvapich2-1.5.1p1/lib:$LD_LIBRARY_PATH
+#=============================================================================
+nproma_set="16"
+#=============================================================================
+# ===========================
+# palu.cscs.ch batch job parameters
+# ---------------------------------
+#SBATCH --ntasks=1
+#SBATCH --output= LOG.exp.nh_solver.t1.run.$JOB_ID.o
+#SBATCH --error= LOG.exp.nh_solver.t1.run.$JOB_ID.e
+#SBATCH --cpus-per-task=1
+#SBATCH --job-name=exp.nh_solver.t1.run
+#SBATCH --time=00:59:00
+#SBATCH --ntasks-per-node=1
+# -V
+# ==========================
+# 7= L2, L3 miss
+# 47=L1 cache miss
+# 102=L2 cache miss
+# 127= float oper
+# 133= L1 misses
+# 137= marked branches
+# 138= memory fetch
+export HPM_EVENT_SET='7,133,138,137,127'
+
+
+#-----------------------------------------------------------------------------
+export ICON_TESTBED_THREADS=$OMP_NUM_THREADS
+#-----------------------------------------------------------------------------
+# for PBS change to directory where job was submitted
+# (without this job is started in HOME)
+if [[ -n ${PBS_O_WORKDIR} ]] ; then
+  cd ${PBS_O_WORKDIR}
+fi
+
+#-----------------------------------------------------------------------------
+# absolute paths of directories
+GRID=${basedir}/grids/iconR2B03-grid_spr0.90.nc    # the grid
+N=35  # vertcal levels
+vertical_coordinates_file_name=${basedir}/vertical_coord_tables/atm_hyb_sz_${N}
+WRKDIR=${basedir}/run.t${OMP_NUM_THREADS}
+if [ ! -d ${WRKDIR} ]; then
+    mkdir -p ${WRKDIR}
+fi
+cd $WRKDIR
+run_commmand="$bindir/icon_testbed"
+
+#=============================================================================
+# This section of the run script containes the specifications of the testbed setup.
+# The specifications are passed by namelist to the program icon_testbed.
+#-----------------------------------------------------------------------------
+# ICON testbed namelist parameters
+# ------------------------
+cat > NAMELIST_ICON_TESTBED << EOF
+&parallel_ctl
+/
+&testbed_ctl
+  nproma_set=$nproma_set    ! array blocking starts at 16, by 8, up to 64
+  main_iterations=10 ! how many times we will run the tests from the main driver
+  run_nh_solver=.true.
+/
+&io_ctl
+ out_expname = '${EXPNAME}' ! file name base
+/
+&run_ctl
+ nlev        = ${N}    ! number of full levels of vertical grid
+ i_cell_type = 3            ! triangular cells
+ msg_level   = 5            ! level of print detail
+ dtime       = 180          ! time step secs
+/
+&grid_ctl
+ patch_file_name = '${GRID}'
+ vertical_coordinates_file_name = '${vertical_coordinates_file_name}'
+/
+&nh_ctl
+ nh_dtime = 180         ! nh solver time step secs
+ nh_iterations=100
+/
+&ocean_ctl
+/
+EOF
+#
+#=============================================================================
+# run the test
+# valgrind
+${start} ${run_commmand}
+check_error $? "${run_commmand}"
+#=============================================================================

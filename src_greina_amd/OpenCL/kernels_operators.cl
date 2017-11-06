@@ -1,0 +1,197 @@
+//==================================================
+//
+//	the operators contain two versions:
+//		- Delaunay grid (triangular)
+//		- Voronoi grid (hexagonal/pentagonal)
+//			what happens with pentagonal cells? does it get a 0 value for the 6th node?
+//
+//	the various operators could be maybe merged together due to their resemblance with each other
+//
+//	Check for unused arguments to remove:
+//		nblocks_e ?
+//
+//==================================================
+
+
+#ifndef __Tahiti__
+#pragma OPENCL EXTENSION cl_khr_fp64: enable
+#else
+#pragma OPENCL EXTENSION cl_amd_fp64: enable
+#endif
+
+__kernel void div_tri(__private int nproma,
+					  __private int nblocks_c,
+					  __private int nblocks_e,
+					  __private int nlev,
+					  __private int i_startblk,
+					  __global double * vec_e,
+					  __global double * geofac_div,
+					  __global int * iidx,
+					  __global int * iblk,
+					  __global int * localStart,
+					  __global int * localEnd,
+					  __global double * div_vec_c)
+{
+        __private int line_idx[3];
+	__private double line_geofac_div[3];
+	const int jb = i_startblk + get_global_id(0);
+	const int jc = localStart[jb] + get_global_id(2);
+	const int jk = get_global_id(1);
+	
+	for (int localIdx=0; localIdx < 3; localIdx++)
+	{
+		const int idx = jc + jb*nproma + localIdx*nproma*nblocks_c;
+		line_idx[localIdx] = iidx[idx]-1 + (iblk[idx]-1)*nproma*nlev;
+		line_geofac_div[localIdx] = geofac_div[jc + localIdx*nproma + jb*nproma*3];
+	}
+
+#if 0
+// Original code
+	const int localIdx = get_local_id(0) + get_local_id(1)*get_local_size(0) + get_local_id(2)*get_local_size(0)*get_local_size(1);
+	
+	if (get_local_id(1) < 3 && jb < nblocks_e && jc < localEnd[get_global_id(0)])
+	{
+		const int idx = jc + jb*nproma + get_local_id(1)*nproma*nblocks_c;
+		
+		line_idx[localIdx] = iidx[idx]-1 + (iblk[idx]-1)*nproma*nlev;
+		line_geofac_div[localIdx] = geofac_div[jc + get_local_id(1)*nproma + jb*nproma*3];
+	}
+	
+	barrier(CLK_GLOBAL_MEM_FENCE);
+#endif
+	
+	if (jk < nlev && jb < nblocks_c && jc < localEnd[jb])
+	{
+		// index computations
+		const int sliceSize = nproma*nlev;
+		const int idx_out = jb*sliceSize + jk*nproma + jc;
+		const int idx_vec_e1 = line_idx[0] + jk*nproma;
+		const int idx_vec_e2 = line_idx[1] + jk*nproma;
+		const int idx_vec_e3 = line_idx[2] + jk*nproma;
+		
+		// divergence
+		div_vec_c[idx_out] = vec_e[idx_vec_e1] * line_geofac_div[0] +
+		                     vec_e[idx_vec_e2] * line_geofac_div[1] +
+		                     vec_e[idx_vec_e3] * line_geofac_div[2];
+	}
+}
+
+__kernel void div_hex(__global double * div_vec_c,
+					  __global double * vec_e,
+					  __global int * iidx,
+					  __global int * iblk,
+					  __global double * geofac_div)
+{
+	// div_vec_c = dot(vec_e, geofac_div)
+}
+
+// 1st part: as div, but on aux_c -> call div_tri(aux_c,vec_e,geofac_div)
+// 2nd part: use aux_c to compute a weighted average of the div of the cell itself and its neighbours
+__kernel void div_avg(__private int i_startidx,
+					  __private int nblocks,
+					  __private int nlev,
+					  __private int jb,
+					  __global double * aux_c,
+					  __global double * avg_coeff,
+					  __global int * inidx,
+					  __global int * inblk,
+					  __global double * div_vec_c)
+{
+/*
+	// only for triangular grid?
+	
+	// needs if condition for early exit
+	//const int jb = get_group_id(0);
+	const int jc = i_startidx + get_local_id(0);
+	const int jk = get_global_id(1);
+	
+	// index computations
+	const int idx_out = jb + jk*nblocks + jc*nblocks*nlev;
+	const int offset = jc*nblocks*3 + jb*3;
+	const int idx_aux_c1 = idx_out;
+	const int idx_aux_c2 = inidx[  offset]** + jk*nblocks + inblk[  offset];
+	const int idx_aux_c3 = inidx[1+offset]** + jk*nblocks + inblk[1+offset];
+	const int idx_aux_c4 = inidx[2+offset]** + jk*nblocks + inblk[2+offset];
+	const int idx_avg_coeff1 = jc*3*nblocks						+ jb;
+	const int idx_avg_coeff2 = jc*3*nblocks +   nblocks + jb;
+	const int idx_avg_coeff3 = jc*3*nblocks + 2*nblocks + jb;
+	const int idx_avg_coeff4 = jc*3*nblocks + 3*nblocks + jb;
+	
+	// divergence
+	div_vec_c[idx_out] = aux_c[idx_aux_c1] * avg_coeff[idx_avg_coeff1] + 
+						 aux_c[idx_aux_c2] * avg_coeff[idx_avg_coeff2] + 
+						 aux_c[idx_aux_c3] * avg_coeff[idx_avg_coeff3] + 
+						 aux_c[idx_aux_c4] * avg_coeff[idx_avg_coeff4];
+*/
+}
+
+__kernel void rot_vertex_atmos_tri(
+__private int nproma,
+					               __private int nblocks_v,
+					               __private int nblocks_e,
+					               __private int slev,
+					               __private int elev,
+					               __private int nlev,
+					               __private int i_startblk,
+								   __private int i_size,
+					               __global double * vec_e,
+					               __global double * geofac_rot,
+					               __global int * iidx,
+					               __global int * iblk,
+					               __global int * localStart,
+								   __global int * localEnd,
+					               __global double * rot_vec
+)
+{
+	__private int line_idx[6];
+	__private double line_geofac_rot[6];
+	const int jb = i_startblk + get_global_id(0);
+	const int jv = localStart[jb] + get_global_id(2);
+	const int jk = slev + get_global_id(1);
+	
+	for (int localIdx=0; localIdx < 6; localIdx++)
+	{
+		const int idx = jv + jb*nproma + localIdx*nproma*nblocks_v;
+		line_idx[localIdx] = iidx[idx]-1 + (iblk[idx]-1)*nproma*nlev;
+		line_geofac_rot[localIdx] = geofac_rot[jv + localIdx*nproma + jb*nproma*6];
+	}
+#if 0	
+	const int localIdx = get_local_id(0) + get_local_id(1)*get_local_size(0) + get_local_id(2)*get_local_size(0)*get_local_size(1);
+// Old version: this must be slower due to the global fence
+	if (get_local_id(1) < 6 && jb < nblocks_e && jv < localEnd[get_global_id(0)])
+	{
+		const int idx = jv + jb*nproma + get_local_id(1)*nproma*nblocks_v;
+		
+		line_idx[localIdx] = iidx[idx]-1 + (iblk[idx]-1)*nproma*nlev;
+		line_geofac_rot[localIdx] = geofac_rot[jv + get_local_id(1)*nproma + jb*nproma*6];
+	}
+	barrier(CLK_GLOBAL_MEM_FENCE);
+#endif
+	
+	if (jk < elev && jb < nblocks_v && jv < localEnd[jb])
+	{
+		// index computations
+		const int sliceSize = nproma*nlev;
+		const int idx_out = jb*sliceSize + jk*nproma + jv;
+		const int idx_vec_e1 = line_idx[0] + jk*nproma;
+		const int idx_vec_e2 = line_idx[1] + jk*nproma;
+		const int idx_vec_e3 = line_idx[2] + jk*nproma;
+		const int idx_vec_e4 = line_idx[3] + jk*nproma;
+		const int idx_vec_e5 = line_idx[4] + jk*nproma;
+		const int idx_vec_e6 = line_idx[5] + jk*nproma;
+		
+		// rot
+		rot_vec[idx_out] = vec_e[idx_vec_e1] * line_geofac_rot[0] +
+					       vec_e[idx_vec_e2] * line_geofac_rot[1] +
+					       vec_e[idx_vec_e3] * line_geofac_rot[2] +
+	 				       vec_e[idx_vec_e4] * line_geofac_rot[3] +
+					       vec_e[idx_vec_e5] * line_geofac_rot[4] +
+					       vec_e[idx_vec_e6] * line_geofac_rot[5];
+	}
+}
+
+__kernel void rot_vertex_atmos_hex()
+{
+	// rot_vec = dot(vec_e, geofac_rot)
+	// 3 components for vec_e
+}

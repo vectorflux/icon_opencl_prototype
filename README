@@ -1,0 +1,58 @@
+-----------------------------------------------------------------------------
+
+README for the ICON_testbed
+
+Leonidas Linardakis, MPI-M,  2011-03-14
+
+Project site: https://code.zmaw.de/projects/icontestbed
+
+-----------------------------------------------------------------------------
+
+The icon_testbed provides a set of methods from the
+ICON project with the purpose of optimizing the
+computational performance for differnet architectures.
+
+-----------------------------------------------------------------------------
+
+Compiling and running
+---------------------
+
+Requirements:
+
+You will need a C and Fortran 2003 compiler and the
+netcdf 4 library.
+
+Configure:
+
+> ./configure [--with-netcdf=<netcd folder>] [--with-openmp] [--with-fortran=<...>]
+
+The files config/mh-<OS> contain the definitions (compilers, paths, etc)
+used in configure. You may modify them according to your installation.
+In addition you may create the config/mh-override, defining parameters
+that will override the defaults. Modules that are required for compiling and
+running are also defined in the config/mh-<OS>.
+
+Make:
+> build_command
+
+-----------------------------------------------------------------------------
+
+Running
+---------------------
+
+The run folder contains the files exp.*, which define
+the experiments set-up. Configure automatically invokes the
+make_runscripts script, which creates the run/exp.*.run scripts.
+These are the 'executable' scripts for running the icon_testbed.
+
+The run scripts include environment specific parameters, such as
+the scheduler to use. These parameters are defined in the
+config/create_target_header script, based on the environment
+information created by configure and is stored in config/set-up.info.
+In the create_target_header a set of functions set_run_target_<target>
+defines the run setup for the specific environment. The <target> is
+defined through the mh-<OS> files via the  config_target variable.
+
+-----------------------------------------------------------------------------
+
+

@@ -1,0 +1,75 @@
+\relax 
+\citation{ICON}
+\citation{Khronos:2010}
+\citation{cudafort}
+\citation{Bonaventura2004}
+\citation{ICOSWP}
+\citation{nevir:1993}
+\citation{Dudhia:1993}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{2}}
+\newlabel{Introduction}{{1}{2}}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Icosahedral Non-Hydrostatic Model}{2}}
+\newlabel{ICON Model}{{2}{2}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Problem Statement}{2}}
+\newlabel{ProblemSetting}{{2.1}{2}}
+\citation{ICON}
+\citation{ICON}
+\citation{ICON}
+\citation{ICON}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Main Characteristics of the ICON Model}{3}}
+\newlabel{Challenges}{{2.2}{3}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Dual representation of the icosahedral grid used in the ICON model as shown on the ICON webpage \cite  {ICON}. The picture shows a nested grid with multiple levels of resolution.}}{4}}
+\newlabel{DualIcosahedralGrid}{{1}{4}}
+\citation{Williams:2009}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces C-staggering of data for the ICON model as shown on the ICON webpage \cite  {ICON} with triangle vertices (v), edges (l) and faces (i).}}{5}}
+\newlabel{CStaggering}{{2}{5}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Performance Assessment}{5}}
+\newlabel{Roofline}{{3}{5}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Roofline Model}{5}}
+\citation{McCalpin:1995}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Hardware Configurations}{6}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Double precision rooflines for Magny-Cours (purple), Tesla M2050 (blue), Tesla T10 (green), GeForce GTX285 (yellow) and Cayman (red). The theoretical rooflines are represented with dashed lines and the measured ones are shown with solid lines. The grey dotted line represents the theoretical PCIe bandwidth.}}{7}}
+\newlabel{RooflineRef}{{3}{7}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Results}{7}}
+\newlabel{Results}{{4}{7}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Variation of the device to device bandwidth of the Tesla M2050 (blue diamonds), the Tesla T10 (green circles), GeForce GTX285 (yellow squares) and Cayman (red triangles) with respect to the size of the working data (1kB up to 64MB).}}{8}}
+\newlabel{BwVsSize}{{4}{8}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Role of the GPU}{8}}
+\newlabel{Role}{{4.1}{8}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Time distribution over 1000 iterations for host to device (green), device to host (blue), computation (yellow) and C++/Fortran overhead (red) for a Tesla M2050 used as accelerator (left) and as main device (right) for the R2B3 grid.}}{9}}
+\newlabel{WorktypeDistribution}{{5}{9}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}GPUs vs CPUs}{10}}
+\newlabel{GPUvsCPU}{{4.2}{10}}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Time in seconds for 1000 iterations of the solver on CPU, single threaded and 24-threaded, and on the various GPUs (kernel time only) for the R2B3 grid.}}{10}}
+\newlabel{TimingsSummaryR2B3}{{1}{10}}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Time in seconds for 1000 iterations of the solver on CPU, single threaded and 24-threaded, and on the various GPUs (kernel time only) for the R2B4 grid.}}{11}}
+\newlabel{TimingsSummaryR2B4}{{2}{11}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Timing for the kernels on the various GPUs for the R2B3 and R2B4 grids and ratio of the times (the second grid is four time as large as the first).}}{11}}
+\newlabel{TimeRatios}{{3}{11}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Log histogram showing the measured times from for the R2B3 (green) and the R2B4 (blue) grids.}}{12}}
+\newlabel{TimingComparison}{{6}{12}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}OpenCL Kernels}{12}}
+\newlabel{OpenCLKernels}{{4.3}{12}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Mapping of Fortran loops to OpenCL work items.}}{13}}
+\newlabel{Fortran2OpenCL}{{7}{13}}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Partitioning of the time spent for kernel computations showing the most significant kernels for the R2B4 grid on the Nvidia M2050 (left) and on the AMD Cayman (right).}}{14}}
+\newlabel{KernelDistribution}{{8}{14}}
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Overall performance and efficiency of the solver}}{14}}
+\newlabel{AggregatedPerf}{{4}{14}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Future}{14}}
+\newlabel{Future}{{5}{14}}
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces Operational intensities of the various kernels implemented with expected optimal (solid lines) and measured performance with an R2B3 (diamonds) and with an R2B4 grid (triangles) on a Tesla M2050 (blue shades) and on a Cayman (red/orange shades). The expected performance is based on the operational intensity only and does not consider the performance degradation caused by the size of the data structures on which the kernels operate.}}{15}}
+\newlabel{Kernels}{{9}{15}}
+\citation{Rossinelli:2011}
+\bibstyle{abbrv}
+\bibdata{Bib}
+\bibcite{Bonaventura2004}{1}
+\bibcite{Dudhia:1993}{2}
+\bibcite{McCalpin:1995}{3}
+\bibcite{ICON}{4}
+\bibcite{Khronos:2010}{5}
+\bibcite{nevir:1993}{6}
+\bibcite{Rossinelli:2011}{7}
+\bibcite{ICOSWP}{8}
+\bibcite{cudafort}{9}
+\bibcite{Williams:2009}{10}

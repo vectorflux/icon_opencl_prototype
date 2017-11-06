@@ -1,0 +1,4 @@
+
+module load netcdf hdf5 
+module list
+make -j 8

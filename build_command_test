@@ -1,0 +1,4 @@
+
+module load netcdf hdf5 
+module list
+make DEFINES="-D TEST" -j 8

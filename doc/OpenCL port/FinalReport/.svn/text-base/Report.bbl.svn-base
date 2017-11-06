@@ -1,0 +1,63 @@
+\begin{thebibliography}{10}
+
+\bibitem{Bonaventura2004}
+L.~Bonaventura, L.~Kornblueh, M.~Giorgetta, E.~Roeckner, T.~Heinze,
+  D.~Majewski, P.~Ripodas, B.~Ritter, T.~Tingler, and J.~Baudisch.
+\newblock {The ICON shallow water model: scientific documentation and benchmark
+  tests}.
+\newblock {\em
+  http://icon.enes.org/references/publications/icon\_scidoc002.pdf}, 2004.
+
+\bibitem{Dudhia:1993}
+J.~Dudhia.
+\newblock {A nonhydrostatic version of the Penn State-NCAR Mesoscale Model:
+  Validation tests and simulation of an Atlantic cyclone and cold front}.
+\newblock In {\em Monterey Workshop}, 1993.
+
+\bibitem{McCalpin:1995}
+J.~D. McCalpin.
+\newblock Memory bandwidth and machine balance in current high performance
+  computers.
+\newblock {\em IEEE Computer Society Technical Committee on Computer
+  Architecture (TCCA) Newsletter}, pages 19--25, Dec. 1995.
+
+\bibitem{ICON}
+MPI-M and DWD.
+\newblock {ICON}.
+\newblock www.icon.enes.org.
+
+\bibitem{Khronos:2010}
+A.~Munshi.
+\newblock {\em The OpenCL Specification, Version 1.1}.
+\newblock Khronos Group Std., September 2010.
+
+\bibitem{nevir:1993}
+P.~Nevir and R.~Blender.
+\newblock A nambu representation of incompressible hydrodynamics using helicity
+  and enstrophy.
+\newblock {\em Journal of Physics A: Mathematical and General}, 26(22):L1189,
+  1993.
+
+\bibitem{Rossinelli:2011}
+D.~Rossinelli, B.~Hejazialhosseini, D.~G. Spampinato, and P.~Koumoutsakos.
+\newblock Multicore/multi-gpu accelerated simulations of multiphase
+  compressible flows using wavelet adapted grids.
+\newblock {\em {SIAM Journal on Scientific Computing}}, 33(2):512--540, 2011.
+
+\bibitem{ICOSWP}
+M.~Schraner, C.~Conti, and W.~Sawyer.
+\newblock Gpu parallelization of the icon shallow water model.
+\newblock Technical report, CSCS, 2011.
+
+\bibitem{cudafort}
+{The Portland Group}.
+\newblock {CUDA Fortran}.
+\newblock www.pgroup.com.
+
+\bibitem{Williams:2009}
+S.~Williams, A.~Waterman, and D.~Patterson.
+\newblock Roofline: an insightful visual performance model for multicore
+  architectures.
+\newblock {\em Commun. ACM}, 52(4):65--76, 2009.
+
+\end{thebibliography}

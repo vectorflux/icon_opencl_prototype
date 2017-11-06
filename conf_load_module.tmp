@@ -1,0 +1,6 @@
+
+module load netcdf hdf5 
+module list
+chmod +x conf__.tmp
+./conf__.tmp 
+rm conf__.tmp
